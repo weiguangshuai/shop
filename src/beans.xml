@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close"
+		p:driverClass="com.mysql.jdbc.Driver"
+		p:jdbcUrl="jdbc:mysql://localhost:3306/shop"
+		p:user="root"
+		p:password="mysql"
+		p:maxPoolSize="40"
+		p:minPoolSize="2"
+		p:initialPoolSize="2"
+		p:maxIdleTime="30"/>
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean"
+		p:dataSource-ref="dataSource">
+		<property name="annotatedClasses">
+		<!--持久化类  -->
+			<list>
+				<value>com.sleep.shop.user.po.User</value>
+				<value>com.sleep.shop.category.po.Category</value>
+				<value>com.sleep.shop.product.po.Product</value>
+				<value>com.sleep.shop.categorysecond.po.CategorySecond</value>
+				<value>com.sleep.shop.order.po.Orders</value>
+				<value>com.sleep.shop.order.po.OrderItem</value>
+				<value>com.sleep.shop.adminuser.po.AdminUser</value>
+				
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">
+				org.hibernate.dialect.MySQL5InnoDBDialect
+				</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+			</props>
+		</property>
+	</bean>
+	<!--事务管理  -->
+	<bean id="transactionManager" 
+	class="org.springframework.orm.hibernate4.HibernateTransactionManager"
+	p:sessionFactory-ref="sessionFactory"/>
+	 <!-- 开启注解事务 -->
+	 <tx:annotation-driven transaction-manager="transactionManager"/>
+	<!--首页访问的Action  -->
+	<bean id="indexAction" class="com.sleep.shop.index.action.IndexAction" scope="prototype"
+		p:categoryService-ref="categoryService"
+		p:productService-ref="productService"/>
+<!--用户模块的Action  -->
+	<bean id="userAction" class="com.sleep.shop.user.action.UserAction" scope="prototype"
+		p:userService-ref="userService"/>
+	
+	<bean id="userDao" class="com.sleep.shop.user.dao.UserDao"
+		p:sessionFactory-ref="sessionFactory"/>
+	<bean id="userService" class="com.sleep.shop.user.service.UserService"
+		p:userdao-ref="userDao"/>
+	<!-- 配置验证码的Action -->
+	<bean id="checkImgAction" class="com.sleep.shop.user.action.CheckImgAction" scope="prototype"/>
+	<!--商品模块的Action  -->
+	<bean id="productAction" class="com.sleep.shop.product.action.ProductAction" scope="prototype"
+		p:productService-ref="productService"/>
+		<!--购物车的Action  -->
+	<bean id="cartAction" class="com.sleep.shop.cart.action.CartAction" scope="prototype"
+		p:productService-ref="productService"/>
+
+	<!-- 订单模块的配置 -->
+	<bean id="orderAction" class="com.sleep.shop.order.action.OrderAction" scope="prototype"
+		p:orderService-ref="orderService"/>
+	<bean id="orderDao" class="com.sleep.shop.order.dao.OrderDao" 
+		p:sessionFactory-ref="sessionFactory"/>
+	<bean id="orderService" class="com.sleep.shop.order.service.OrderService"
+		p:orderDao-ref="orderDao"/>
+	
+	<!--一级分类的Action  -->
+	<bean id="categoryDao" class="com.sleep.shop.category.dao.CategoryDao"
+		p:sessionFactory-ref="sessionFactory"/>
+	<bean id="categoryService" class="com.sleep.shop.category.service.CategoryService"
+		p:categoryDao-ref="categoryDao"/>
+	
+	<bean id="productDao" class="com.sleep.shop.product.dao.ProductDao"
+		p:sessionFactory-ref="sessionFactory"/>
+	<bean id="productService" class="com.sleep.shop.product.service.ProductService"
+		p:productDao-ref="productDao"/>
+		
+	<!-- 后台管理模块的配置 -->
+	<bean id="adminUserAction" class="com.sleep.shop.adminuser.action.AdminUserAction" scope="prototype"
+		p:adminUserService-ref="adminUserService"/>
+	<bean id="adminUserDao" class="com.sleep.shop.adminuser.dao.AdminUserDao"
+		p:sessionFactory-ref="sessionFactory"/>
+	<bean id="adminUserService" class="com.sleep.shop.adminuser.service.AdminUserService"
+		p:adminUserDao-ref="adminUserDao"/>
+	<bean id="adminCategoryAction" class="com.sleep.shop.category.action.AdminCategoryAction" scope="prototype"
+		p:categoryService-ref="categoryService"/>
+	<bean id="adminCategorySecondAction" class="com.sleep.shop.categorysecond.action.AdminCategorySecondAction" scope="prototype"
+		p:categorySecondService-ref="categorySecondService"
+		p:categoryService-ref="categoryService"/>
+	<bean id="categorySecondService" class="com.sleep.shop.categorysecond.service.CategorySecondService"
+		p:categorySecondDao-ref="categorySecondDao"/>
+	<bean id="categorySecondDao" class="com.sleep.shop.categorysecond.dao.CategorySecondDao"
+		p:sessionFactory-ref="sessionFactory"/>
+	<bean id="adminProductAction" class="com.sleep.shop.product.action.AdminProductAction" scope="prototype"
+		p:productService-ref="productService"
+		p:categorySecondService-ref="categorySecondService"/>
+	
+</beans>
